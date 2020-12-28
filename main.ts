@@ -97,11 +97,9 @@ function メッセージ選択 (メッセージ番号: number) {
     }
 }
 input.onSound(DetectedSound.Loud, function () {
-    メッセージ番号 += 1
-    if (メッセージ番号 > メッセージリスト.length) {
-        メッセージ番号 = 0
-    }
-    メッセージ選択(メッセージ番号)
+    input.setSoundThreshold(SoundThreshold.Loud, 256)
+    music.playMelody("G B A G C5 B A B ", 120)
+    input.setSoundThreshold(SoundThreshold.Loud, 100)
 })
 input.onButtonPressed(Button.B, function () {
     メッセージ番号 += 1
@@ -156,13 +154,14 @@ function 時刻表示 () {
     }
     strip.show()
 }
+let 輝度 = 0
 let 時計文字 = ""
 let 秒 = 0
 let 分 = 0
 let 時 = 0
+let 表示位置 = 0
 let メッセージ = ""
 let POS2 = 0
-let 表示位置 = 0
 let POS = 0
 let LINE = 0
 let font_no = 0
@@ -177,13 +176,17 @@ let strip: neopixel.Strip = null
 let FONT: string[] = []
 let 文字変換表 = ""
 let 時刻 = 0
+let メッセージor時計 = 0
 rtc.setDevice(rtcType.ds3231)
 時刻 = rtc.getDatetime()
 文字変換表 = "0123456789:_ "
 FONT = ["7C828282827C00", "000042FE020000", "468A9292926200", "44829292926C00", "1C244484FE0400", "E2A2A2A2A29C00", "1C325292920C00", "80808E90A0C000", "6C929292926C00", "60929294987000", "006C6C00", "00000000", "00000000000000"]
 strip = neopixel.create(DigitalPin.P1, 256, NeoPixelMode.RGB)
+strip.clear()
+strip.show()
 strip2 = neopixel.create(DigitalPin.P1, 256, NeoPixelMode.RGB)
-let メッセージor時計 = 0
+strip2.clear()
+strip2.show()
 行末空白 = 8
 let welcome_SuZuka = "F80618601806F8001C2A2A2A180080FE001C222222001C2222221C003E201E201E001C2A2A2A1800000064929292924C003C0202043E0082868A92A2C2003C0202043E00FE08142200042A2A2A1E00"
 let SuZuka_YosHida = "64929292924C003C0202043E0082868A92A2C2003C0202043E00FE08142200042A2A2A1E0000008040201E204080001C2222221C00122A2A2A2400FE10101010FE00BE001C222212FE00042A2A2A1E00"
@@ -194,21 +197,11 @@ let suzuka = "649292924C003C02023E00868A92A2C2003C02023E00FE08142200042A2A1E00"
 文字色 = neopixel.colors(NeoPixelColors.Indigo)
 背景色 = neopixel.colors(NeoPixelColors.Black)
 let 最大輝度 = 255
-let 輝度 = 0
-strip.setBrightness(輝度)
-strip2.setBrightness(輝度)
+let 最小輝度 = 5
 メッセージ選択(メッセージ番号)
-strip.clear()
-strip.show()
-strip2.clear()
-strip2.show()
 basic.forever(function () {
     時刻 = rtc.getDatetime()
-    if (input.lightLevel() >= 最大輝度) {
-        輝度 = 最大輝度
-    } else {
-        輝度 = input.lightLevel()
-    }
+    輝度 = Math.constrain(input.lightLevel(), 最小輝度, 最大輝度)
     strip.setBrightness(輝度 / 5)
     strip2.setBrightness(輝度 / 5)
     if (メッセージ番号 >= メッセージリスト.length) {
@@ -229,7 +222,7 @@ basic.forever(function () {
 })
 control.inBackground(function () {
     while (true) {
-        watchfont.showNumber2(input.soundLevel())
+        watchfont.plotBarGraph(input.soundLevel())
         basic.pause(100)
     }
 })

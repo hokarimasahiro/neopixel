@@ -8,6 +8,21 @@ function 時計フォント展開 (text: string) {
     }
     return fontlist
 }
+radio.onReceivedNumber(function (receivedNumber) {
+    if (receivedNumber == 5) {
+        文字色切替()
+    } else if (receivedNumber == 11) {
+        メッセージ切替()
+    } else if (receivedNumber == 8) {
+        soundExpression.happy.playUntilDone()
+    } else if (receivedNumber == 12) {
+    	
+    } else if (receivedNumber == 13) {
+    	
+    } else if (receivedNumber == 16) {
+    	
+    }
+})
 function 固定表示 (fontList: string) {
     for (let index22 = 0; index22 <= fontList.length / 2 - 1; index22++) {
         LINE = bit.hexToNumber(fontList.substr(index22 * 2, 2))
@@ -57,6 +72,32 @@ function シフト表示 (fontlist: string, 表示位置: number) {
     }
 }
 input.onButtonPressed(Button.A, function () {
+    文字色切替()
+})
+function メッセージ切替 () {
+    メッセージ番号 += 1
+    if (メッセージ番号 > メッセージリスト.length) {
+        メッセージ番号 = 0
+    }
+    if (メッセージ番号 < メッセージリスト.length) {
+        メッセージ = メッセージリスト[メッセージ番号]
+        if (メッセージ.length > 64) {
+            for (let index = 0; index < 行末空白; index++) {
+                メッセージ = "" + メッセージ + "00"
+            }
+            if (メッセージ.length % 4 != 0) {
+                メッセージ = "" + メッセージ + "00"
+            }
+            strip.clear()
+            strip2.clear()
+            表示位置 = 0
+        } else {
+            固定表示(メッセージ)
+            strip.show()
+        }
+    }
+}
+function 文字色切替 () {
     if (文字色 == neopixel.colors(NeoPixelColors.Red)) {
         文字色 = neopixel.colors(NeoPixelColors.Orange)
     } else if (文字色 == neopixel.colors(NeoPixelColors.Orange)) {
@@ -76,37 +117,9 @@ input.onButtonPressed(Button.A, function () {
     } else {
         文字色 = neopixel.colors(NeoPixelColors.Red)
     }
-})
-function メッセージ選択 (メッセージ番号: number) {
-    if (メッセージ番号 < メッセージリスト.length) {
-        メッセージ = メッセージリスト[メッセージ番号]
-        if (メッセージ.length > 64) {
-            for (let index = 0; index < 行末空白; index++) {
-                メッセージ = "" + メッセージ + "00"
-            }
-            if (メッセージ.length % 4 != 0) {
-                メッセージ = "" + メッセージ + "00"
-            }
-            strip.clear()
-            strip2.clear()
-            表示位置 = 0
-        } else {
-            固定表示(メッセージ)
-            strip.show()
-        }
-    }
 }
-input.onSound(DetectedSound.Loud, function () {
-    input.setSoundThreshold(SoundThreshold.Loud, 256)
-    music.playMelody("G B A G C5 B A B ", 120)
-    input.setSoundThreshold(SoundThreshold.Loud, 100)
-})
 input.onButtonPressed(Button.B, function () {
-    メッセージ番号 += 1
-    if (メッセージ番号 > メッセージリスト.length) {
-        メッセージ番号 = 0
-    }
-    メッセージ選択(メッセージ番号)
+    メッセージ切替()
 })
 function 時刻表示 () {
     時刻 = rtc.getDatetime()
@@ -176,7 +189,6 @@ let strip: neopixel.Strip = null
 let FONT: string[] = []
 let 文字変換表 = ""
 let 時刻 = 0
-let メッセージor時計 = 0
 rtc.setDevice(rtcType.ds3231)
 時刻 = rtc.getDatetime()
 文字変換表 = "0123456789:_ "
@@ -198,7 +210,8 @@ let suzuka = "649292924C003C02023E00868A92A2C2003C02023E00FE08142200042A2A1E00"
 背景色 = neopixel.colors(NeoPixelColors.Black)
 let 最大輝度 = 255
 let 最小輝度 = 5
-メッセージ選択(メッセージ番号)
+メッセージ切替()
+radio.setGroup(1)
 basic.forever(function () {
     時刻 = rtc.getDatetime()
     輝度 = Math.constrain(input.lightLevel(), 最小輝度, 最大輝度)
